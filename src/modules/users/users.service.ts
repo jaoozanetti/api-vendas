@@ -13,6 +13,7 @@ export class UsersService {
     private userRepository: Repository<User>,
   ) {}
 
+  // 1ª função: Criar um novo usuário
   async create(createUserDto: CreateUserDto) {
     // Cria o Objeto na memoria (ainda não salvo no banco)
     const user = this.userRepository.create(createUserDto);
@@ -25,6 +26,7 @@ export class UsersService {
     return await this.userRepository.find();
   }
 
+  // 2ª função: Atualizar um usuário
   // Retorna um usuário pelo ID
   async findOne(id: number) {
     const user = await this.userRepository.findOneBy({ id });
@@ -34,5 +36,28 @@ export class UsersService {
     }
     // Se encontrar, retorna o usuário
     return user;
+  }
+
+  // 3ª função: Atualizar um usuário
+  async update(id: number, updateUserDto: UpdateUserDto) {
+    // Passo 1: Verificar se o usuário existe
+    const user = await this.findOne(id);
+
+    // Passo 2: Atualiza os dados na memória
+    // O Repository.merge pega os dados novos e joga por cima dos dados antigos
+    this.userRepository.merge(user, updateUserDto);
+
+    // Passo 3: Salva os dados atualizados no banco
+    return await this.userRepository.save(user);
+  }
+
+  // 4ª função: Inativar um usuário (Soft Delete)
+  async remove(id: number) {
+    // Passo 1: Verificar se o usuário existe
+    await this.findOne(id);
+
+    // O SoftDelete preenche a coluna deletedAt com a data atual
+    // Ele não apaga a linha do banco de dados
+    return await this.userRepository.softDelete(id);
   }
 }
