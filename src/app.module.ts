@@ -2,6 +2,8 @@ import { Module } from '@nestjs/common';
 import { ConfigModule} from '@nestjs/config'; // Importa o módulo de configuração do Banco de Dados
 import { TypeOrmModule} from '@nestjs/typeorm'; // Importa o módulo TypeORM para integração com o Banco de Dados
 import { UsersModule } from './modules/users/users.module';
+import { ClientsModule } from './modules/clients/clients.module';
+import { Client } from './modules/clients/entities/client.entity';
 
 @Module({
   imports: [
@@ -22,6 +24,7 @@ import { UsersModule } from './modules/users/users.module';
       synchronize: true, // Sincroniza o esquema do Banco de Dados com as entidades (não recomendado para produção)
     }),
     UsersModule,
+    ClientsModule,
   ],
   controllers: [],
   providers: [],
