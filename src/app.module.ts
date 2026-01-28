@@ -3,7 +3,7 @@ import { ConfigModule} from '@nestjs/config'; // Importa o módulo de configura�
 import { TypeOrmModule} from '@nestjs/typeorm'; // Importa o módulo TypeORM para integração com o Banco de Dados
 import { UsersModule } from './modules/users/users.module';
 import { ClientsModule } from './modules/clients/clients.module';
-import { Client } from './modules/clients/entities/client.entity';
+import { ProductsModule } from './modules/products/products.module';
 
 @Module({
   imports: [
@@ -25,6 +25,7 @@ import { Client } from './modules/clients/entities/client.entity';
     }),
     UsersModule,
     ClientsModule,
+    ProductsModule,
   ],
   controllers: [],
   providers: [],
