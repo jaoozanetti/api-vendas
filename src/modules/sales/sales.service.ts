@@ -125,12 +125,24 @@ export class SalesService {
     return `Venda com ID ${id} atualizada com sucesso`;
   }
 
-  // 5ª função: Remover uma venda pelo ID
+  // 5ª função: Remover uma venda pelo ID (Estorno)
   async remove(id: number) {
-    const result = await this.salesRepository.delete(id);
-    if (result.affected === 0) {
-      throw new NotFoundException(`Venda com ID ${id} não encontrada, digite um ID válido`);
+    // 1ª - Achar a Venda para saber o que devolver
+    // Ele já traz os itens, o cliente e já da erro 404 se não encontrar.
+    const sale = await this.findOne(id);
+
+    // 2ª - Devolver os itens para o Estoque
+    // Aqui ele só processa o estoque, não apaga os itens da venda
+    for (const item of sale.items) {
+      // Precisamos buscar o produto de novo para ter o estoque atualizado e completo
+      const product = await this.productsRepository.findOneBy({ id: item.product.id });
+
+      if (product) {
+        product.stock = Number(product.stock) + Number(item.amount); // Aqui é a Soma dos Itens de devolução
+        await this.productsRepository.save(product);
+      }
     }
-    return `Venda com ID ${id} removida com sucesso`;
+       await this.salesRepository.softDelete(id);
+       return { message: `Venda com ID ${id} cancelada e estoque estornado com sucesso` };
   }
 }

@@ -14,12 +14,12 @@ export class SaleItem {
     price: number; // Preço do produto no momento da venda
 
     // RELACIONAMENTO: Muitos itens de venda -> 1 venda
-    @ManyToOne(() => Sale, (sale) => sale.id, { nullable: false }) // Não existe item de venda sem venda
+    @ManyToOne(() => Sale, (sale) => sale.id, { nullable: false, onDelete: 'CASCADE' }) // Não existe item de venda sem venda
     @JoinColumn({ name: 'sale_id' }) // Nome da coluna na tabela de itens de venda que referencia a venda
     sale: Sale;
 
     // RELACIONAMENTO: Muitos itens de venda -> 1 produto
-    @ManyToOne(() => Product, { nullable: false }) // Não existe item de venda sem produto
+    @ManyToOne(() => Product, { nullable: false, onDelete: 'CASCADE' }) // Não existe item de venda sem produto
     @JoinColumn({ name: 'product_id' }) // Nome da coluna na tabela de itens de venda que referencia o produto
     product: Product;
 }
