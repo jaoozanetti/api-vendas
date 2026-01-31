@@ -38,21 +38,60 @@ export class SalesService {
     });
     const savedSale = await this.salesRepository.save(newSale);
 
+    // 3ª - Processar os Itens da Venda
     for (const itemDto of items) {
-      // SUA MISSÃO COMEÇA AQUI:
-      // A) Busque o produto (productRepository.findOneBy...)
-      // B) Valide se existe
-      // C) Valide se tem estoque (product.stock >= itemDto.amount)
-      // D) Crie o SaleItem com o preço DO PRODUTO (product.price)
-      // E) Salve o SaleItem
-      // F) Atualize o estoque do Produto (product.stock -= ...) e salve o produto
-    });
+      const productEncontrado = await this.productsRepository.findOneBy({ id: itemDto.productId });
+      if (!productEncontrado) {
+        // Se chegou aqui , o ID está errado
+        throw new BadRequestException(`Produto com ID ${itemDto.productId} não encontrado`);
+      }
+      // Verificar se há estoque suficiente
+      if (productEncontrado.stock < itemDto.amount) {
+        throw new BadRequestException(`Estoque insuficiente para o produto ID ${productEncontrado.name}`);
+      }
+      // Criando o Item da Venda
+      const itemVenda = this.saleItemsRepository.create({
+        sale: savedSale, //O objeto da venda que acabou de ser salva (cabeçalho)
+        product: productEncontrado, // O objeto do produto a ser encontrado no Banco
+        amount: itemDto.amount, // Quantidade do produto que veio no JSON
+        price: productEncontrado.price, // Preço do produto que veio do Banco para não ser alterado via JSON
+      });
+      // Salvando o Item da Venda
+      await this.saleItemsRepository.save(itemVenda);
+
+      // 4ª Subtraindo o estoque dos produtos vendidos
+      productEncontrado.stock = productEncontrado.stock - itemDto.amount;
+      await this.productsRepository.save(productEncontrado);
+      }
+      const vendaCompleta = await this.salesRepository.findOne({
+        where: { id: savedSale.id },
+        relations: ['client', 'items', 'items.product'], // Carrega os itens da venda e os produtos relacionados
+        select: {
+          id: true,
+          date: true,
+          client: { id: true, name: true, email: true },
+          items: {
+            id: true, amount: true, price: true,
+            product: { id: true, name: true, price: true },
+          },
+        },
+      });
+      return vendaCompleta;
   }
 
   // 2ª função: Retornar todas as vendas
   async findAll() {
     return await this.salesRepository.find({
-      relations: ['items', 'items.product'], // Carrega os itens da venda e os produtos relacionados
+      relations: ['client', 'items', 'items.product'], // Carrega os itens da venda e os produtos relacionados
+      select: {
+        id: true,
+        date: true,
+        client: { id: true, name: true, email: true },
+        items: {
+          id: true, amount: true, price: true,
+          product: { id: true, name: true, price: true },
+        },
+      }
     });
   }
 
@@ -60,7 +99,16 @@ export class SalesService {
   async findOne(id: number) {
     const sale = await this.salesRepository.findOne({
       where: { id },
-      relations: ['items', 'items.product'], // Carrega os itens da venda e os produtos relacionados
+      relations: ['client', 'items', 'items.product'], // Carrega os itens da venda e os produtos relacionados
+      select: {
+        id: true,
+        date: true,
+        client: { id: true, name: true, email: true },
+        items: {
+          id: true, amount: true, price: true,
+          product: { id: true, name: true, price: true },
+        },
+      }
     });
     if (!sale) {
       throw new NotFoundException(`Venda com ID ${id} não encontrada, digite um ID válido`);
