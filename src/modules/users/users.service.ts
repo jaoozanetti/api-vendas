@@ -63,6 +63,9 @@ export class UsersService {
   async remove(id: number) {
     // Passo 1: Verificar se o usuário existe
     await this.findOne(id);
+    if (!id) {
+      throw new NotFoundException(`Usuário com ID ${id} não encontrado.`);
+    }
 
     // O SoftDelete preenche a coluna deletedAt com a data atual
     // Ele não apaga a linha do banco de dados
