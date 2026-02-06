@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './entities/user.entity';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class UsersService {
@@ -15,8 +16,15 @@ export class UsersService {
 
   // 1ª função: Criar um novo usuário
   async create(createUserDto: CreateUserDto) {
-    // Cria o Objeto na memoria (ainda não salvo no banco)
-    const user = this.userRepository.create(createUserDto);
+    // Gera o salt para o hash
+    const salt = await bcrypt.genSalt(10);
+    // Hash da senha
+    const passwordHash = await bcrypt.hash(createUserDto.password, salt);
+    //
+    const user = this.userRepository.create({
+      ...createUserDto,
+      password: passwordHash,
+    });
     // Salva o Objeto no banco de dados
     return await this.userRepository.save(user);
   }
@@ -60,4 +68,14 @@ export class UsersService {
     // Ele não apaga a linha do banco de dados
     return await this.userRepository.softDelete(id);
   }
-}
+
+  // 5ª função: Encontrar um usuário pelo email (usado para autenticação)
+  async findByEmail(email: string) {
+      // Busca um usuário onde a coluna 'email' bate com o parâmetro recebido
+      // Usamos addSelect('user.password') porque por padrão a senha pode estar oculta se você usou @Exclude no DTO/Entity
+      // Mas aqui precisamos dela para validar o login!
+      return await this.userRepository.findOne({
+        where: { email },
+      });
+    }
+  }

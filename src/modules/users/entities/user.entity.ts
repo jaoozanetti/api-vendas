@@ -6,6 +6,9 @@ export class User {
     @PrimaryGeneratedColumn('increment') // Define a coluna 'id' como chave primária auto-incrementada
     id: number;
 
+    @Column({ name: 'email', length: 150, unique: true, nullable: false }) // Define a coluna 'email' com tamanho máximo de 150 caracteres e valor único
+    email: string;
+
     @Column({ name: 'name', length: 100, nullable: false }) // Define a coluna 'name' com tamanho máximo de 100 caracteres
     name: string;
 

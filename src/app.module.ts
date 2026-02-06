@@ -1,16 +1,27 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule} from '@nestjs/config'; // Importa o módulo de configuração do Banco de Dados
+import { ConfigModule, ConfigService} from '@nestjs/config'; // Importa o módulo de configuração do Banco de Dados
 import { TypeOrmModule} from '@nestjs/typeorm'; // Importa o módulo TypeORM para integração com o Banco de Dados
 import { UsersModule } from './modules/users/users.module';
 import { ClientsModule } from './modules/clients/clients.module';
 import { ProductsModule } from './modules/products/products.module';
 import { SalesModule } from './modules/sales/sales.module';
+import { AuthModule } from './modules/auth/auth.module';
+import { LocalStrategy } from './modules/auth/local.strategy';
+import { RedisModule } from '@nestjs-modules/ioredis/dist/redis.module';
+
+
 
 @Module({
   imports: [
     // Configura o módulo de configuração para carregar variáveis do arquivo .env
-    ConfigModule.forRoot({
-      isGlobal: true, // Torna o módulo de configuração global
+    ConfigModule.forRoot({isGlobal: true,}),
+    RedisModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => ({
+        type: 'single',
+        url: configService.get<string>('REDIS_URL'),
+      }),
     }),
 
     // Configura o TypeORM para conectar ao Banco de Dados usando variáveis de ambiente
@@ -28,8 +39,9 @@ import { SalesModule } from './modules/sales/sales.module';
     ClientsModule,
     ProductsModule,
     SalesModule,
+    AuthModule,
   ],
   controllers: [],
-  providers: [],
+  providers: [LocalStrategy],
 })
 export class AppModule {}

@@ -9,5 +9,6 @@ import { User } from './entities/user.entity'; // Importa a entidade User para r
   imports: [TypeOrmModule.forFeature([User])],
   controllers: [UsersController],
   providers: [UsersService],
+  exports: [UsersService], // Exporta o UsersService para que possa ser usado em outros módulos (como o AuthModule)
 })
 export class UsersModule {}
