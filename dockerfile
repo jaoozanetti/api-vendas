@@ -25,5 +25,6 @@ CMD ["pnpm", "start"]
 
 # docker build -t infraonedb/api-vendas:1.0.1 . ; docker push infraonedb/api-vendas:1.0.1 09/02/2026 - tag de versão e push para o repositório
 # docker build -t infraonedb/api-vendas:1.0.2 . ; docker push infraonedb/api-vendas:1.0.2 09/02/2026 - nova tag de versão e push para o repositório
+# docker build -t infraonedb/api-vendas:1.0.3 . ; docker push infraonedb/api-vendas:1.0.3 09/02/2026 - nova tag de versão e push para o repositório
 
 
