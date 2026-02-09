@@ -6,7 +6,7 @@ import { ValidationPipe } from '@nestjs/common';
 async function bootstrap() { 
   const app = await NestFactory.create(AppModule);
   //Ativa o filtro global de exceções HTTP
-  app.setGlobalPrefix('api/v1');
+  app.setGlobalPrefix('api');
   app.useGlobalFilters(new HttpExceptionFilter());
   app.useGlobalPipes(new ValidationPipe({
     whitelist: true,
@@ -14,6 +14,6 @@ async function bootstrap() {
     transform: true,
   }));
   await app.listen(process.env.PORT ?? 3000);
-  console.log(`API rodando em: http://localhost:${process.env.PORT ?? 3000}/api/v1`);
+  console.log(`API rodando na porta ${process.env.PORT ?? 3000}`);
 }
 bootstrap();
