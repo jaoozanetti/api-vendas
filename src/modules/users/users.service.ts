@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -15,19 +15,29 @@ export class UsersService {
   ) {}
 
   // 1ª função: Criar um novo usuário
-  async create(createUserDto: CreateUserDto) {
-    // Gera o salt para o hash
-    const salt = await bcrypt.genSalt(10);
-    // Hash da senha
-    const passwordHash = await bcrypt.hash(createUserDto.password, salt);
-    //
-    const user = this.userRepository.create({
-      ...createUserDto,
-      password: passwordHash,
+async create(createUserDto: CreateUserDto) {
+    // PRIMEIRO: Verifique se o usuário JÁ existe
+    // Se existir, a gente para tudo e solta o erro aqui mesmo.
+    const existingUser = await this.userRepository.findOne({ 
+        where: { email: createUserDto.email } 
     });
-    // Salva o Objeto no banco de dados
+
+    if (existingUser) {
+        throw new ConflictException('Email já cadastrado.');
+    }
+
+    // SEGUNDO: Se não existe, aí sim geramos a senha e salvamos
+    const salt = await bcrypt.genSalt(10);
+    const passwordHash = await bcrypt.hash(createUserDto.password, salt);
+
+    const user = this.userRepository.create({
+        ...createUserDto,
+        password: passwordHash,
+    });
+
+    // POR ÚLTIMO: Salvamos e retornamos
     return await this.userRepository.save(user);
-  }
+}
 
   // Retorna todos os usuários
   async findAll() {

@@ -4,6 +4,7 @@ import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 
+@UseGuards(JwtAuthGuard) // Aqui você pode adicionar um guard de autenticação, como o JwtAuthGuard, para proteger as rotas
 @Controller('products')
 export class ProductsController {
   constructor(private readonly productsService: ProductsService) {}
@@ -13,12 +14,12 @@ export class ProductsController {
   create(@Body() createProductDto: CreateProductDto) {
     return this.productsService.create(createProductDto);
   }
-
+  @UseGuards(JwtAuthGuard) // Protege a rota de acesso a todos os produtos
   @Get()
   findAll() {
     return this.productsService.findAll();
   }
-
+  @UseGuards(JwtAuthGuard) // Protege a rota de acesso a um produto específico
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.productsService.findOne(+id);
