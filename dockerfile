@@ -21,5 +21,6 @@ CMD ["pnpm", "start"]
 # docker build -t infraonedb/api-vendas .; if ($?) { docker push infraonedb/api-vendas } // Comando para buildar e pushar a imagem para o repositório Docker Hub
 
 # docker build -t infraonedb/api-vendas:1.0.1 . ; docker push infraonedb/api-vendas:1.0.1 09/02/2026 - tag de versão e push para o repositório
+# docker build -t infraonedb/api-vendas:1.0.2 . ; docker push infraonedb/api-vendas:1.0.2 09/02/2026 - nova tag de versão e push para o repositório
 
 
