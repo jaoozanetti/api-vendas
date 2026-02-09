@@ -33,6 +33,7 @@ import { RedisModule } from '@nestjs-modules/ioredis/dist/redis.module';
       password: process.env.DB_PASSWORD, // Senha do Banco de Dados
       database: process.env.DB_NAME, // Nome do Banco de Dados
       entities: [__dirname + '/**/*.entity{.ts,.js}'], // Caminho para as entidades do TypeORM
+      dropSchema: false, // Não dropa o esquema do Banco de Dados a cada inicialização
       synchronize: true, // Sincroniza o esquema do Banco de Dados com as entidades (não recomendado para produção)
     }),
     UsersModule,
