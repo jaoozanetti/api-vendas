@@ -16,18 +16,21 @@ export class ClientsService { // Injeção de dependência do repositório de cl
   ) {}
 
   // 1ª função: Criar um novo cliente
-  async create(createClientDto: CreateClientDto) {
-    // O banco vai lançar um erro se o CPF ou e-mail já existirem
-    const client = this.clientRepository.create(createClientDto);
-    try {
-      return await this.clientRepository.save(client);
-    } catch (error) {
-      if (error.code === '23505') {
-        // 23505 é o código de violação de chave única no Postgres
-        throw new ConflictException('CPF ou e-mail já cadastrado.');
-      }
+async create(createClientDto: CreateClientDto) {
+  const client = this.clientRepository.create(createClientDto);
+  
+  try {
+    // O await aqui é essencial. O retorno do save já traz o ID do banco.
+    return await this.clientRepository.save(client); 
+  } catch (error) {
+    if (error.code === '23505') {
+      throw new ConflictException('CPF ou e-mail já cadastrado.');
     }
+    // IMPORTANTE: Se for outro erro (ex: tabela sumiu), 
+    // precisamos lançar o erro original para saber o que aconteceu!
+    throw error; 
   }
+}
 
   // 2ª função: Retornar todos os clientes
  async findAll() {
