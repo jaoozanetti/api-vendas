@@ -23,61 +23,76 @@ export class SalesService {
 
   // 1ª função: Criar uma nova venda
   async create(createSaleDto: CreateSaleDto) {
-    const { clientId, items } = createSaleDto;
+  const { clientId, items } = createSaleDto;
+  
+  // 1ª - Validar o Cliente
+  const client = await this.clientsRepository.findOneBy({ id: clientId });
+  if (!client) {
+    throw new BadRequestException(`Cliente com ID ${clientId} não encontrado`);
+  }
+
+  // --- NOVA VARIÁVEL PARA O TOTAL ---
+  let totalVenda = 0;
+
+  // 2ª - Criar a Venda (Ainda sem o total final)
+  const newSale = this.salesRepository.create({
+    date: new Date(),
+    client: client,
+    total: 0, // Iniciamos com 0
+  });
+  const savedSale = await this.salesRepository.save(newSale);
+
+  // 3ª - Processar os Itens da Venda
+  for (const itemDto of items) {
+    const productEncontrado = await this.productsRepository.findOneBy({ id: itemDto.productId });
     
-    // 1ª - Validar o Cliente
-    const client = await this.clientsRepository.findOneBy({ id: clientId });
-    if (!client) {
-      throw new BadRequestException(`Cliente com ID ${clientId} não encontrado`);
+    if (!productEncontrado) {
+      throw new BadRequestException(`Produto com ID ${itemDto.productId} não encontrado`);
     }
 
-    // 2ª - Criar e Salvar a Venda (Header)
-    const newSale = this.salesRepository.create({
-      date: new Date(),
-      client: client,
+    if (productEncontrado.stock < itemDto.amount) {
+      throw new BadRequestException(`Estoque insuficiente para o produto: ${productEncontrado.name}`);
+    }
+
+    // --- CÁLCULO DO TOTAL ACUMULADO ---
+    totalVenda += Number(productEncontrado.price) * itemDto.amount;
+
+    const itemVenda = this.saleItemsRepository.create({
+      sale: savedSale,
+      product: productEncontrado,
+      amount: itemDto.amount,
+      price: productEncontrado.price, 
     });
-    const savedSale = await this.salesRepository.save(newSale);
 
-    // 3ª - Processar os Itens da Venda
-    for (const itemDto of items) {
-      const productEncontrado = await this.productsRepository.findOneBy({ id: itemDto.productId });
-      if (!productEncontrado) {
-        // Se chegou aqui , o ID está errado
-        throw new BadRequestException(`Produto com ID ${itemDto.productId} não encontrado`);
-      }
-      // Verificar se há estoque suficiente
-      if (productEncontrado.stock < itemDto.amount) {
-        throw new BadRequestException(`Estoque insuficiente para o produto ID ${productEncontrado.name}`);
-      }
-      // Criando o Item da Venda
-      const itemVenda = this.saleItemsRepository.create({
-        sale: savedSale, //O objeto da venda que acabou de ser salva (cabeçalho)
-        product: productEncontrado, // O objeto do produto a ser encontrado no Banco
-        amount: itemDto.amount, // Quantidade do produto que veio no JSON
-        price: productEncontrado.price, // Preço do produto que veio do Banco para não ser alterado via JSON
-      });
-      // Salvando o Item da Venda
-      await this.saleItemsRepository.save(itemVenda);
+    await this.saleItemsRepository.save(itemVenda);
 
-      // 4ª Subtraindo o estoque dos produtos vendidos
-      productEncontrado.stock = productEncontrado.stock - itemDto.amount;
-      await this.productsRepository.save(productEncontrado);
-      }
-      const vendaCompleta = await this.salesRepository.findOne({
-        where: { id: savedSale.id },
-        relations: ['client', 'items', 'items.product'], // Carrega os itens da venda e os produtos relacionados
-        select: {
-          id: true,
-          date: true,
-          client: { id: true, name: true, email: true },
-          items: {
-            id: true, amount: true, price: true,
-            product: { id: true, name: true, price: true },
-          },
-        },
-      });
-      return vendaCompleta;
+    // 4ª Subtraindo o estoque
+    productEncontrado.stock -= itemDto.amount;
+    await this.productsRepository.save(productEncontrado);
   }
+
+  // --- 5ª ATUALIZAR O TOTAL DA VENDA NO FINAL ---
+  savedSale.total = totalVenda;
+  await this.salesRepository.save(savedSale);
+
+  // Busca final para retorno
+  const vendaCompleta = await this.salesRepository.findOne({
+    where: { id: savedSale.id },
+    relations: ['client', 'items', 'items.product'],
+    select: {
+      id: true,
+      date: true,
+      total: true, // Certifique-se que o campo total existe na sua Entity Sales
+      client: { id: true, name: true, email: true },
+      items: {
+        id: true, amount: true, price: true,
+        product: { id: true, name: true, price: true },
+      },
+    },
+  });
+
+  return vendaCompleta;
+}
 
   // 2ª função: Retornar todas as vendas
   async findAll() {

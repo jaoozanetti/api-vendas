@@ -19,6 +19,9 @@ export class Sale {
     @OneToMany(() => SaleItem, (saleItem) => saleItem.sale, { cascade: true }) // Cascade para salvar os itens junto com a venda
     items: SaleItem[]; // Itens da venda
 
+    @Column({ type: 'decimal', precision: 10, scale: 2 })
+    total: number; // Total da venda
+
 
 // Auditoria: adicionando colunas de createdAt, updatedAt e deletedAt
     @CreateDateColumn({ name: 'created_at' })
