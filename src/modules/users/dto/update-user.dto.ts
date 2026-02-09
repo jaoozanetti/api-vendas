@@ -1,4 +1,4 @@
-import { PartialType } from '@nestjs/mapped-types';
+import { PartialType } from '@nestjs/swagger';
 import { CreateUserDto } from './create-user.dto';
 
 // O PartialType pega todas as regras do CreateUserDto (tem que ser email, senha min 6, etc)
