@@ -19,15 +19,13 @@ import { RedisModule } from '@nestjs-modules/ioredis/dist/redis.module';
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({
-      secret: configService.get<string>('JWT_SECRET'), // Chave secreta para assinar o token JWT
-      signOptions: {
-        expiresIn: Number(configService.get<string>('JWT_EXPIRES_IN')) // Convert to number
-        },
+        secret: configService.get<string>('JWT_SECRET'),
+        // expiresIn agora é definido por chamada no AuthService (access=15min, etc.)
       }),
     }),
   ],
   controllers: [AuthController],
   providers: [AuthService, LocalStrategy, JwtStrategy],
-  exports: [AuthService], // Exporta o AuthService para que possa ser usado em outros módulos (como o AppModule)
+  exports: [AuthService],
 })
 export class AuthModule {}

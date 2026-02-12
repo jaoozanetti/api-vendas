@@ -3,11 +3,13 @@ import { AppModule } from './app.module';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import helmet from 'helmet';
 
 async function bootstrap() { 
   const app = await NestFactory.create(AppModule);
   //Ativa o filtro global de exceções HTTP
   app.setGlobalPrefix('api');
+  app.use(helmet());
   app.useGlobalFilters(new HttpExceptionFilter());
   app.useGlobalPipes(new ValidationPipe({
     whitelist: true,

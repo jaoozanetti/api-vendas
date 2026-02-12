@@ -1,6 +1,8 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule, ConfigService} from '@nestjs/config'; // Importa o módulo de configuração do Banco de Dados
-import { TypeOrmModule} from '@nestjs/typeorm'; // Importa o módulo TypeORM para integração com o Banco de Dados
+import { ConfigModule, ConfigService} from '@nestjs/config';
+import { TypeOrmModule} from '@nestjs/typeorm';
+import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
+import { APP_GUARD } from '@nestjs/core';
 import { UsersModule } from './modules/users/users.module';
 import { ClientsModule } from './modules/clients/clients.module';
 import { ProductsModule } from './modules/products/products.module';
@@ -15,6 +17,17 @@ import { RedisModule } from '@nestjs-modules/ioredis/dist/redis.module';
   imports: [
     // Configura o módulo de configuração para carregar variáveis do arquivo .env
     ConfigModule.forRoot({isGlobal: true,}),
+
+    // Rate Limiting global – proteção contra brute force
+    ThrottlerModule.forRoot({
+      throttlers: [
+        {
+          ttl: 60000,   // Janela de 1 minuto (em ms)
+          limit: 20,    // 20 requisições por minuto (limite global; rotas sensíveis podem ter limites menores)
+        },
+      ],
+    }),
+
     RedisModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
@@ -43,6 +56,12 @@ import { RedisModule } from '@nestjs-modules/ioredis/dist/redis.module';
     AuthModule,
   ],
   controllers: [],
-  providers: [LocalStrategy],
+  providers: [
+    LocalStrategy,
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard, // Aplica rate limiting globalmente
+    },
+  ],
 })
 export class AppModule {}
