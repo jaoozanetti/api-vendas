@@ -1,4 +1,4 @@
-# --- ESTÁGIO 1: BUILD (A Cozinha) ---
+# --- ESTÁGIO 1: BUILD ---
 FROM node:20.17-alpine AS builder
 
 # Habilita o pnpm via corepack (padrão Node moderno)
@@ -18,7 +18,7 @@ COPY . .
 # Compila o TypeScript para JavaScript (gera a pasta /dist)
 RUN pnpm run build
 
-# --- ESTÁGIO 2: PRODUÇÃO (O Prato Pronto) ---
+# --- ESTÁGIO 2: PRODUÇÃO ---
 FROM node:20.17-alpine AS production
 
 RUN corepack enable && corepack prepare pnpm@latest --activate
@@ -37,7 +37,6 @@ RUN pnpm install --prod --frozen-lockfile
 # Copia o código compilado do estágio anterior
 COPY --from=builder /app/dist ./dist
 
-# --- REQUISITO DO SÊNIOR: Cópia de Assets Estáticos ---
 # Garante que templates e fontes estejam disponíveis na pasta de execução
 RUN mkdir -p dist/email/templates dist/fonts
 COPY --from=builder /app/src/email/templates/ ./dist/email/templates/
@@ -46,8 +45,7 @@ COPY --from=builder /app/src/fonts/ ./dist/fonts/
 # Expõe a porta padrão do NestJS
 EXPOSE 3000
 
-# Executa as migrations e inicia a aplicação
-# Nota: O banco deve estar acessível neste momento
+# Executa as migrations e inicia a aplicação em modo de produção
 CMD ["sh", "-c", "pnpm run migrate:prod && pnpm run start:prod"]
 
 # Comandos para buildar e pushar a imagem para o repositório Docker Hub 1ª vez
