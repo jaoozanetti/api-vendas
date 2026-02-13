@@ -1,9 +1,10 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Query } from '@nestjs/common';
 import { ProductsService } from './products.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiParam } from '@nestjs/swagger';
+import { PaginationProductDto } from './dto/pagination-product.dto';
 
 @ApiTags('Products')
 @ApiBearerAuth('access-token')
@@ -21,12 +22,12 @@ export class ProductsController {
     return this.productsService.create(createProductDto);
   }
 
-  @ApiOperation({ summary: 'Listar produtos', description: 'Retorna todos os produtos cadastrados' })
+  @ApiOperation({ summary: 'Listar produtos', description: 'Retorna todos os produtos cadastrados com paginação' })
   @ApiResponse({ status: 200, description: 'Lista de produtos retornada com sucesso.' })
   @ApiResponse({ status: 401, description: 'Não autorizado.' })
   @Get()
-  findAll() {
-    return this.productsService.findAll();
+  findAll(@Query() paginationDto: PaginationProductDto) {
+    return this.productsService.findAll(paginationDto);
   }
 
   @ApiOperation({ summary: 'Buscar produto por ID', description: 'Retorna um produto específico pelo ID' })
