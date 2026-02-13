@@ -2,7 +2,7 @@
 FROM node:20.17-alpine AS builder
 
 # Habilita o pnpm via corepack (padrão Node moderno)
-RUN corepack enable && corepack prepare pnpm@latest --activate
+RUN npm install -g pnpm
 
 WORKDIR /app
 
@@ -21,7 +21,7 @@ RUN pnpm run build
 # --- ESTÁGIO 2: PRODUÇÃO ---
 FROM node:20.17-alpine AS production
 
-RUN corepack enable && corepack prepare pnpm@latest --activate
+RUN npm install -g pnpm
 
 WORKDIR /app
 
@@ -36,11 +36,6 @@ RUN pnpm install --prod --frozen-lockfile
 
 # Copia o código compilado do estágio anterior
 COPY --from=builder /app/dist ./dist
-
-# Garante que templates e fontes estejam disponíveis na pasta de execução
-RUN mkdir -p dist/email/templates dist/fonts
-COPY --from=builder /app/src/email/templates/ ./dist/email/templates/
-COPY --from=builder /app/src/fonts/ ./dist/fonts/
 
 # Expõe a porta padrão do NestJS
 EXPOSE 3000
