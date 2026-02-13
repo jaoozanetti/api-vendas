@@ -1,9 +1,10 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Query } from '@nestjs/common';
 import { SalesService } from './sales.service';
 import { CreateSaleDto } from './dto/create-sale.dto';
 import { UpdateSaleDto } from './dto/update-sale.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiParam } from '@nestjs/swagger';
+import { PaginationDto } from './dto/pagination-dto';
 
 @ApiTags('Sales')
 @ApiBearerAuth('access-token')
@@ -25,8 +26,8 @@ export class SalesController {
   @ApiResponse({ status: 200, description: 'Lista de vendas retornada com sucesso.' })
   @ApiResponse({ status: 401, description: 'Não autorizado.' })
   @Get()
-  async findAll() {
-    return this.salesService.findAll();
+  async findAll(@Query() paginationDto: PaginationDto) {
+    return this.salesService.findAll(paginationDto);
   }
 
   @ApiOperation({ summary: 'Buscar venda por ID', description: 'Retorna uma venda específica pelo ID' })

@@ -9,6 +9,7 @@ import { Product } from '../products/entities/product.entity';
 import { Client } from '../clients/entities/client.entity';
 import { SaleItemResponseDto } from './dto/sale-item-response.dto';
 import { SaleResponseDto } from './dto/sale-response.dto';
+import { PaginationDto } from './dto/pagination-dto';
 @Injectable()
 export class SalesService {
   constructor(
@@ -80,7 +81,7 @@ export class SalesService {
 
     return sale;
   }
-
+  // Cria uma nova venda, validando cliente, estoque e atualizando o estoque dos produtos envolvidos
   async create(createSaleDto: CreateSaleDto): Promise<SaleResponseDto> {
     // Inicializa controle de transação
     const queryRunner = this.dataSource.createQueryRunner();
@@ -170,13 +171,33 @@ export class SalesService {
     }
   }
 
- // Busca todas as vendas, mapeando para DTOs de resposta
-  async findAll(): Promise<SaleResponseDto[]> {
-    // Usa a query builder padrão para buscar todas as vendas
-    const sales = await this.getSalesQueryBuilder().getMany();
+ // Busca todas as vendas, mapeando para DTOs de resposta e aplicando paginação
+  async findAll(paginationDto: PaginationDto) {
+    const { page = 1, limit = 10 } = paginationDto;
+    const skip = (page - 1) * limit;
 
-    // Mapeia cada venda para o DTO de resposta
-    return sales.map(sale => this.mapEntityToResponse(sale));
+    try {
+      // 💡 USANDO O SEU HELPER: Mantém o padrão de selects e joins
+      const [data, totalItems] = await this.getSalesQueryBuilder()
+        .skip(skip)
+        .take(limit)
+        .orderBy('sale.date', 'DESC')
+        .getManyAndCount(); // getManyAndCount é o equivalente ao findAndCount no QueryBuilder
+
+      return {
+        data: data.map(sale => this.mapEntityToResponse(sale)),
+        meta: {
+          totalItems,
+          itemCount: data.length,
+          itemsPerPage: limit,
+          totalPages: Math.ceil(totalItems / limit),
+          currentPage: page,
+        },
+      };
+    } catch (error) {
+      console.error('Erro de paginação de vendas:', error);
+      throw new BadRequestException('Erro ao buscar vendas paginadas');
+    }
   }
 
 // Busca uma venda pelo ID, mapeando para DTO de resposta
