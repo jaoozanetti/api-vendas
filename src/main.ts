@@ -18,7 +18,13 @@ async function bootstrap() {
     transformOptions: {
       enableImplicitConversion: true,
     },
-  }));
+  })),
+  app.enableCors({
+    origin: '*', // Permite todas as origens (ajuste conforme necessário)
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    allowedHeaders: 'Content-Type, Accept, Authorization',
+    credentials: true,
+  });
 
   // Configuração do Swagger
   const config = new DocumentBuilder()
