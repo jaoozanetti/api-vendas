@@ -22,7 +22,7 @@ async create(createProductDto: CreateProductDto) {
 
 // 2ª função: Retornar todos os produtos com paginação
   async findAll(paginationDto: PaginationProductDto) {
-    const { page = 1, limit = 10 } = paginationDto;
+    const { page = 1 , limit = 10 } = paginationDto;
     const skip = (page - 1) * limit;
 
     try {

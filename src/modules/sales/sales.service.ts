@@ -144,7 +144,10 @@ export class SalesService {
       // PASSO 4: Criação da Venda
       // Cria e salva a venda com todos os itens
       // O cascade: true da Entity garante que os itens também serão salvos
+<<<<<<< HEAD
       // Inicia a Transação antes de criar a venda para garantir que tudo seja atômico
+=======
+>>>>>>> e70d8fcc79a5ae11496bc2c40966229a03b8a699
       await queryRunner.startTransaction();
       const sale = queryRunner.manager.create(Sale, {
         date: new Date(),
