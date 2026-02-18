@@ -10,6 +10,7 @@ import { SalesModule } from './modules/sales/sales.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { LocalStrategy } from './modules/auth/local.strategy';
 import { RedisModule } from '@nestjs-modules/ioredis/dist/redis.module';
+import { LogsModule } from './modules/logs/logs.module';
 
 
 
@@ -54,6 +55,7 @@ import { RedisModule } from '@nestjs-modules/ioredis/dist/redis.module';
     ProductsModule,
     SalesModule,
     AuthModule,
+    LogsModule,
   ],
   controllers: [],
   providers: [
