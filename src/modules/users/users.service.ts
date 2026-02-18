@@ -60,7 +60,9 @@ async create(createUserDto: CreateUserDto) {
   async update(id: number, updateUserDto: UpdateUserDto) {
     // Passo 1: Verificar se o usuário existe
     const user = await this.findOne(id);
-
+    if (!user) {
+      throw new NotFoundException(`Usuário com ID ${id} não encontrado.`);
+    }
     // Passo 2: Atualiza os dados na memória
     // O Repository.merge pega os dados novos e joga por cima dos dados antigos
     this.userRepository.merge(user, updateUserDto);

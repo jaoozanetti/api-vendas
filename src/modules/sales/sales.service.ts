@@ -86,7 +86,6 @@ export class SalesService {
     // Inicializa controle de transação
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
-    await queryRunner.startTransaction();
 
     try {
       // PASSO 1: Validação do Cliente
@@ -145,6 +144,7 @@ export class SalesService {
       // PASSO 4: Criação da Venda
       // Cria e salva a venda com todos os itens
       // O cascade: true da Entity garante que os itens também serão salvos
+      await queryRunner.startTransaction();
       const sale = queryRunner.manager.create(Sale, {
         date: new Date(),
         client,
