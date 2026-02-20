@@ -95,7 +95,6 @@ async create(createUserDto: CreateUserDto, req: Request) {
     this.userRepository.merge(user, updateUserDto);
 
     // Passo 3: Salva os dados atualizados no banco
-    return await this.userRepository.save(user);
 
       // Logamos a ação de atualização do usuário
       await this.logsService.logAction(
@@ -105,7 +104,9 @@ async create(createUserDto: CreateUserDto, req: Request) {
         'Alteração de dados do usuário',
         updateUserDto,
         req
-    );
+
+      );
+      return await this.userRepository.save(user);
   }
 
   // 4ª função: Inativar um usuário (Soft Delete)
@@ -118,7 +119,6 @@ async create(createUserDto: CreateUserDto, req: Request) {
 
     // O SoftDelete preenche a coluna deletedAt com a data atual
     // Ele não apaga a linha do banco de dados
-    return await this.userRepository.softDelete(id);
 
       // Logamos a ação de inativação do usuário
       await this.logsService.logAction(
@@ -129,6 +129,7 @@ async create(createUserDto: CreateUserDto, req: Request) {
         { id },
         req
     );
+      return await this.userRepository.softDelete(id);
   }
 
   // 5ª função: Encontrar um usuário pelo email (usado para autenticação)
